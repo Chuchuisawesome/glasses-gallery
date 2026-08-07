@@ -20,9 +20,25 @@ python3 -m http.server 8765
 
 ## 部署（HTTPS）
 
-任选一种静态托管（GitHub Pages / Cloudflare Pages / Netlify 等），站点根目录指向 `glasses-gallery/`（需能访问 `/index.html`、`/manifest.json`、`/images/...`）。
+已发布到 GitHub Pages：
 
-GitHub Pages 建议在该目录放 `.nojekyll`（仓库内已包含）。
+- 仓库：https://github.com/Chuchuisawesome/glasses-gallery
+- 站点：https://chuchuisawesome.github.io/glasses-gallery/
+
+本地可编辑副本在 `日常工作任务/glasses-gallery/`；正式发布副本在 `~/Desktop/glasses-gallery-pages/`（与远程 `origin` 关联）。
+
+加图后更新发布：
+
+```bash
+cd ~/Desktop/glasses-gallery-pages
+# 复制新图到 images/ 后：
+node scripts/gen-manifest.js
+git add images manifest.json
+git commit -m "Add images"
+git push
+```
+
+（若国内访问 `github.io` 不稳定，可改用 Cloudflare Pages 等镜像同一仓库。）
 
 ## 接到眼镜
 
