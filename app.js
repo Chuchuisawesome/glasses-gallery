@@ -1,0 +1,96 @@
+(function () {
+  var logic = window.GalleryLogic;
+  var photo = document.getElementById('photo');
+  var statusEl = document.getElementById('status');
+  var counterEl = document.getElementById('counter');
+
+  var images = [];
+  var index = 0;
+  var loadToken = 0;
+
+  function setStatus(text) {
+    if (text) {
+      statusEl.textContent = text;
+      statusEl.hidden = false;
+    } else {
+      statusEl.textContent = '';
+      statusEl.hidden = true;
+    }
+  }
+
+  function updateCounter() {
+    counterEl.textContent = logic.formatCounter(index, images.length);
+  }
+
+  function showImage() {
+    updateCounter();
+    if (!images.length) {
+      photo.hidden = true;
+      photo.removeAttribute('src');
+      setStatus('还没有图片');
+      return;
+    }
+
+    var token = ++loadToken;
+    var url = logic.imageUrl(images[index]);
+    setStatus('加载中…');
+    photo.hidden = true;
+
+    var img = new Image();
+    img.onload = function () {
+      if (token !== loadToken) return;
+      photo.src = url;
+      photo.alt = images[index];
+      photo.hidden = false;
+      setStatus('');
+    };
+    img.onerror = function () {
+      if (token !== loadToken) return;
+      photo.hidden = true;
+      photo.removeAttribute('src');
+      setStatus('加载失败');
+    };
+    img.src = url;
+  }
+
+  function loadManifest() {
+    setStatus('加载中…');
+    return fetch('manifest.json', { cache: 'no-store' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('manifest http ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        images = Array.isArray(data.images) ? data.images.slice() : [];
+        if (data.title) document.title = data.title;
+        index = logic.clampIndex(index, images.length);
+        showImage();
+      })
+      .catch(function () {
+        images = [];
+        updateCounter();
+        photo.hidden = true;
+        photo.removeAttribute('src');
+        setStatus('无法加载相册');
+      });
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      if (!images.length) return;
+      index = logic.prevIndex(index, images.length);
+      showImage();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      if (!images.length) return;
+      index = logic.nextIndex(index, images.length);
+      showImage();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      loadManifest();
+    }
+  });
+
+  loadManifest();
+})();
