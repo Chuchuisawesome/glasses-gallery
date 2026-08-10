@@ -2,7 +2,6 @@
   var logic = window.GalleryLogic;
   var photo = document.getElementById('photo');
   var statusEl = document.getElementById('status');
-  var counterEl = document.getElementById('counter');
 
   var images = [];
   var index = 0;
@@ -18,12 +17,7 @@
     }
   }
 
-  function updateCounter() {
-    counterEl.textContent = logic.formatCounter(index, images.length);
-  }
-
   function showImage() {
-    updateCounter();
     if (!images.length) {
       photo.hidden = true;
       photo.removeAttribute('src');
@@ -68,7 +62,6 @@
       })
       .catch(function () {
         images = [];
-        updateCounter();
         photo.hidden = true;
         photo.removeAttribute('src');
         setStatus('无法加载相册');

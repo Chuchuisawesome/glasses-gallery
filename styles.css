@@ -45,13 +45,3 @@ body {
 .status[hidden] {
   display: none;
 }
-
-.counter {
-  position: absolute;
-  right: 16px;
-  bottom: 16px;
-  font-size: 18px;
-  color: rgba(255, 255, 255, 0.75);
-  text-shadow: 0 0 6px rgba(0, 0, 0, 0.9);
-  pointer-events: none;
-}
