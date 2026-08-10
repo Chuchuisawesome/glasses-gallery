@@ -2,8 +2,19 @@
   "title": "我的相册",
   "images": [
     "02-sample.png",
+    "auto_grid_648x648_16row_16col.png",
     "beihai.jpg",
+    "black_648x648.png",
+    "black_bg_full_white_cross_648x648.png",
+    "Blue_card_648x648.png",
+    "Green_card_648x648.png",
+    "HS_2px.png",
+    "HS_4px.png",
+    "Red_card_648x648.png",
     "Unknown3.png",
-    "Unknown5.png"
+    "Unknown5.png",
+    "White_card_648x648.png",
+    "ZW_2px.png",
+    "ZW_4px.png"
   ]
 }
