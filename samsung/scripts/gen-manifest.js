@@ -23,7 +23,7 @@ function buildManifest(filenames, title) {
 function writeManifest(projectRoot) {
   var imagesDir = path.join(projectRoot, 'images');
   var names = fs.existsSync(imagesDir) ? fs.readdirSync(imagesDir) : [];
-  var manifest = buildManifest(names);
+  var manifest = buildManifest(names, 'Samsung Demo');
   var outPath = path.join(projectRoot, 'manifest.json');
   fs.writeFileSync(outPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
   return { outPath: outPath, manifest: manifest };
