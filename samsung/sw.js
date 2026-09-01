@@ -1,5 +1,5 @@
 /* Cache-first for Samsung Demo gallery — speeds up repeat opens / flip during demos. */
-var CACHE = 'samsung-demo-v3';
+var CACHE = 'samsung-demo-v4';
 
 self.addEventListener('install', function (event) {
   event.waitUntil(
