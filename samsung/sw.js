@@ -1,4 +1,4 @@
-/* Samsung Demo gallery — cache shell + images for faster second open. */
+/* Cache-first for Samsung Demo gallery — speeds up repeat opens / flip during demos. */
 var CACHE = 'samsung-demo-v2';
 
 self.addEventListener('install', function (event) {
@@ -8,11 +8,20 @@ self.addEventListener('install', function (event) {
         return res.json();
       })
       .then(function (data) {
-        var urls = ['./', 'index.html', 'styles.css', 'app.js', 'app-logic.js', 'manifest.json', 'sw.js'];
         var images = Array.isArray(data.images) ? data.images : [];
-        for (var i = 0; i < images.length; i++) {
-          urls.push('images/' + images[i]);
-        }
+        var urls = [
+          './',
+          'index.html',
+          'styles.css',
+          'app-logic.js',
+          'app.js',
+          'manifest.json',
+          'sw.js',
+        ].concat(
+          images.map(function (name) {
+            return 'images/' + name;
+          })
+        );
         return caches.open(CACHE).then(function (cache) {
           return cache.addAll(urls);
         });
@@ -21,7 +30,8 @@ self.addEventListener('install', function (event) {
         return self.skipWaiting();
       })
       .catch(function () {
-        // First install may fail offline; ignore.
+        // First install may race; fetch handler still fills cache.
+        return self.skipWaiting();
       })
   );
 });
@@ -43,16 +53,16 @@ self.addEventListener('activate', function (event) {
 self.addEventListener('fetch', function (event) {
   var req = event.request;
   if (req.method !== 'GET') return;
+
   event.respondWith(
     caches.match(req).then(function (cached) {
       if (cached) return cached;
       return fetch(req).then(function (res) {
+        if (!res || res.status !== 200 || res.type === 'opaque') return res;
         var copy = res.clone();
-        if (res.ok) {
-          caches.open(CACHE).then(function (cache) {
-            cache.put(req, copy);
-          });
-        }
+        caches.open(CACHE).then(function (cache) {
+          cache.put(req, copy);
+        });
         return res;
       });
     })

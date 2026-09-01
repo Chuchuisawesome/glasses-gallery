@@ -6,7 +6,7 @@
   var images = [];
   var index = 0;
   var loadToken = 0;
-  var preloadCache = {};
+  var preloadCache = Object.create(null);
 
   function setStatus(text) {
     if (text) {
@@ -25,27 +25,17 @@
     img.src = url;
   }
 
-  function preloadNeighbors() {
+  function preloadAround(i) {
     if (!images.length) return;
-    var prev = logic.prevIndex(index, images.length);
-    var next = logic.nextIndex(index, images.length);
-    preload(logic.imageUrl(images[prev]));
-    preload(logic.imageUrl(images[next]));
-    // Warm a couple further ahead for smoother demos
-    var next2 = logic.nextIndex(next, images.length);
-    preload(logic.imageUrl(images[next2]));
+    preload(logic.imageUrl(images[logic.prevIndex(i, images.length)]));
+    preload(logic.imageUrl(images[logic.nextIndex(i, images.length)]));
   }
 
-  function warmAllInBackground() {
-    if (!images.length) return;
-    var i = 0;
-    function step() {
-      if (i >= images.length) return;
+  /** After first image is up, warm the rest so client demos flip instantly. */
+  function warmAll() {
+    for (var i = 0; i < images.length; i++) {
       preload(logic.imageUrl(images[i]));
-      i += 1;
-      setTimeout(step, 80);
     }
-    setTimeout(step, 300);
   }
 
   function showImage() {
@@ -60,6 +50,7 @@
     var url = logic.imageUrl(images[index]);
     setStatus('加载中…');
     photo.hidden = true;
+    preloadAround(index);
 
     var img = new Image();
     img.onload = function () {
@@ -68,7 +59,7 @@
       photo.alt = images[index];
       photo.hidden = false;
       setStatus('');
-      preloadNeighbors();
+      preloadAround(index);
     };
     img.onerror = function () {
       if (token !== loadToken) return;
@@ -91,7 +82,8 @@
         if (data.title) document.title = data.title;
         index = logic.clampIndex(index, images.length);
         showImage();
-        warmAllInBackground();
+        // Defer full warm so first paint wins.
+        setTimeout(warmAll, 300);
       })
       .catch(function () {
         images = [];
