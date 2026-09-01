@@ -6,6 +6,7 @@
   var images = [];
   var index = 0;
   var loadToken = 0;
+  var preloadCache = {};
 
   function setStatus(text) {
     if (text) {
@@ -15,6 +16,36 @@
       statusEl.textContent = '';
       statusEl.hidden = true;
     }
+  }
+
+  function preload(url) {
+    if (!url || preloadCache[url]) return;
+    var img = new Image();
+    preloadCache[url] = img;
+    img.src = url;
+  }
+
+  function preloadNeighbors() {
+    if (!images.length) return;
+    var prev = logic.prevIndex(index, images.length);
+    var next = logic.nextIndex(index, images.length);
+    preload(logic.imageUrl(images[prev]));
+    preload(logic.imageUrl(images[next]));
+    // Warm a couple further ahead for smoother demos
+    var next2 = logic.nextIndex(next, images.length);
+    preload(logic.imageUrl(images[next2]));
+  }
+
+  function warmAllInBackground() {
+    if (!images.length) return;
+    var i = 0;
+    function step() {
+      if (i >= images.length) return;
+      preload(logic.imageUrl(images[i]));
+      i += 1;
+      setTimeout(step, 80);
+    }
+    setTimeout(step, 300);
   }
 
   function showImage() {
@@ -37,6 +68,7 @@
       photo.alt = images[index];
       photo.hidden = false;
       setStatus('');
+      preloadNeighbors();
     };
     img.onerror = function () {
       if (token !== loadToken) return;
@@ -49,7 +81,7 @@
 
   function loadManifest() {
     setStatus('加载中…');
-    return fetch('manifest.json', { cache: 'no-store' })
+    return fetch('manifest.json')
       .then(function (res) {
         if (!res.ok) throw new Error('manifest http ' + res.status);
         return res.json();
@@ -59,6 +91,7 @@
         if (data.title) document.title = data.title;
         index = logic.clampIndex(index, images.length);
         showImage();
+        warmAllInBackground();
       })
       .catch(function () {
         images = [];
@@ -84,6 +117,10 @@
       loadManifest();
     }
   });
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  }
 
   loadManifest();
 })();
